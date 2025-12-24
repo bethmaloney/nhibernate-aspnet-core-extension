@@ -29,6 +29,7 @@ bld/
 *.snupkg
 .nuget/
 packages/
+nupkgs/
 
 # Test results
 [Tt]est[Rr]esult*/
