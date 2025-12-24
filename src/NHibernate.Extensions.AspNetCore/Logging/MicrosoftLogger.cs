@@ -1,20 +1,13 @@
 using Microsoft.Extensions.Logging;
-using INHibernateLogger = NHibernate.INHibernateLogger;
-using NHibernateLogLevel = NHibernate.NHibernateLogLevel;
 
 namespace NHibernate.Extensions.AspNetCore.Logging;
 
 /// <summary>
 /// NHibernate logger implementation that bridges to Microsoft.Extensions.Logging.
 /// </summary>
-internal sealed class MicrosoftLogger : INHibernateLogger
+internal sealed class MicrosoftLogger(ILogger logger) : INHibernateLogger
 {
-    private readonly ILogger _logger;
-
-    public MicrosoftLogger(ILogger logger)
-    {
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-    }
+    private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
     public bool IsEnabled(NHibernateLogLevel logLevel)
     {

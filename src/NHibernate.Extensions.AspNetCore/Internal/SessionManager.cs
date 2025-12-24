@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace NHibernate.Extensions.AspNetCore.Internal;
@@ -5,22 +6,17 @@ namespace NHibernate.Extensions.AspNetCore.Internal;
 /// <summary>
 /// Manages the lifecycle of NHibernate sessions within a DI scope.
 /// </summary>
-internal sealed class SessionManager : IDisposable
+internal sealed class SessionManager(ISessionFactory sessionFactory, IOptions<NHibernateOptions> options, ILogger<SessionManager> logger) : IDisposable
 {
-    private readonly ISessionFactory _sessionFactory;
-    private readonly NHibernateOptions _options;
+    private readonly ISessionFactory _sessionFactory = sessionFactory ?? throw new ArgumentNullException(nameof(sessionFactory));
+    private readonly NHibernateOptions _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
+    private readonly ILogger<SessionManager> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     private readonly object _sessionLock = new();
     private readonly object _statelessSessionLock = new();
 
     private ISession? _session;
     private IStatelessSession? _statelessSession;
     private bool _disposed;
-
-    public SessionManager(ISessionFactory sessionFactory, IOptions<NHibernateOptions> options)
-    {
-        _sessionFactory = sessionFactory ?? throw new ArgumentNullException(nameof(sessionFactory));
-        _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
-    }
 
     /// <summary>
     /// Gets or creates the scoped session.
@@ -75,9 +71,10 @@ internal sealed class SessionManager : IDisposable
                 {
                     _session.Flush();
                 }
-                catch
+                catch (Exception ex)
                 {
                     // Swallow flush exceptions during dispose to avoid masking original exceptions
+                    _logger.LogError(ex, "Error flushing NHibernate session during dispose");
                 }
             }
 
@@ -85,10 +82,7 @@ internal sealed class SessionManager : IDisposable
             _session = null;
         }
 
-        if (_statelessSession is not null)
-        {
-            _statelessSession.Dispose();
-            _statelessSession = null;
-        }
+        _statelessSession?.Dispose();
+        _statelessSession = null;
     }
 }
