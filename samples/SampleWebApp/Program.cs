@@ -5,6 +5,7 @@ using NHibernate.Extensions.Sqlite;
 using NHibernate.Linq;
 using NHibernate.Mapping.ByCode;
 using NHibernate.Tool.hbm2ddl;
+using Scalar.AspNetCore;
 using SampleWebApp.Entities;
 using SampleWebApp.Mappings;
 using ISession = NHibernate.ISession;
@@ -13,8 +14,7 @@ using ISessionFactory = NHibernate.ISessionFactory;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddOpenApi();
 
 // Configure NHibernate
 builder.Services.AddNHibernate(options =>
@@ -26,6 +26,8 @@ builder.Services.AddNHibernate(options =>
             db.ConnectionString = "Data Source=sample.db";
             db.Dialect<SQLiteDialect>();
             db.Driver<SqliteDriver>();
+            db.KeywordsAutoImport = Hbm2DDLKeyWords.None;
+            db.LogFormattedSql = true;
         });
 
         // Add mappings
@@ -35,6 +37,7 @@ builder.Services.AddNHibernate(options =>
     };
 
     // Enable logging in development
+    // Set "NHibernate.SQL": "Debug" in appsettings.json to see SQL statements
     options.EnableLogging = builder.Environment.IsDevelopment();
 });
 
@@ -51,8 +54,8 @@ using (var scope = app.Services.CreateScope())
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    app.MapOpenApi();
+    app.MapScalarApiReference();
 }
 
 app.UseHttpsRedirection();
@@ -62,16 +65,14 @@ app.MapGet("/products", async (ISession session) =>
 {
     return await session.Query<Product>().ToListAsync();
 })
-.WithName("GetProducts")
-.WithOpenApi();
+.WithName("GetProducts");
 
 app.MapGet("/products/{id}", async (int id, ISession session) =>
 {
     var product = await session.GetAsync<Product>(id);
     return product is not null ? Results.Ok(product) : Results.NotFound();
 })
-.WithName("GetProduct")
-.WithOpenApi();
+.WithName("GetProduct");
 
 app.MapPost("/products", async (Product product, ISession session) =>
 {
@@ -79,8 +80,7 @@ app.MapPost("/products", async (Product product, ISession session) =>
     await session.FlushAsync();
     return Results.Created($"/products/{product.Id}", product);
 })
-.WithName("CreateProduct")
-.WithOpenApi();
+.WithName("CreateProduct");
 
 app.MapPut("/products/{id}", async (int id, Product product, ISession session) =>
 {
@@ -94,8 +94,7 @@ app.MapPut("/products/{id}", async (int id, Product product, ISession session) =
     await session.FlushAsync();
     return Results.Ok(existing);
 })
-.WithName("UpdateProduct")
-.WithOpenApi();
+.WithName("UpdateProduct");
 
 app.MapDelete("/products/{id}", async (int id, ISession session) =>
 {
@@ -106,7 +105,6 @@ app.MapDelete("/products/{id}", async (int id, ISession session) =>
     await session.FlushAsync();
     return Results.NoContent();
 })
-.WithName("DeleteProduct")
-.WithOpenApi();
+.WithName("DeleteProduct");
 
 app.Run();
