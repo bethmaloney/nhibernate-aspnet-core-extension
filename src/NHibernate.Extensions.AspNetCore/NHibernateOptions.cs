@@ -17,10 +17,4 @@ public class NHibernateOptions
     /// Default is true.
     /// </summary>
     public bool EnableLogging { get; set; } = true;
-
-    /// <summary>
-    /// When true, automatically flushes the session at the end of each request scope.
-    /// Default is true.
-    /// </summary>
-    public bool AutoFlushOnDispose { get; set; } = true;
 }
