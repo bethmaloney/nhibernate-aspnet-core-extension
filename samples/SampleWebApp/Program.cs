@@ -10,6 +10,7 @@ using SampleWebApp.Entities;
 using SampleWebApp.Mappings;
 using ISession = NHibernate.ISession;
 using ISessionFactory = NHibernate.ISessionFactory;
+using NHibernate;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -61,13 +62,13 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 // Product API endpoints
-app.MapGet("/products", async (ISession session) =>
+app.MapGet("/products", async (IStatelessSession session) =>
 {
     return await session.Query<Product>().ToListAsync();
 })
 .WithName("GetProducts");
 
-app.MapGet("/products/{id}", async (int id, ISession session) =>
+app.MapGet("/products/{id}", async (int id, IStatelessSession session) =>
 {
     var product = await session.GetAsync<Product>(id);
     return product is not null ? Results.Ok(product) : Results.NotFound();
@@ -76,14 +77,16 @@ app.MapGet("/products/{id}", async (int id, ISession session) =>
 
 app.MapPost("/products", async (Product product, ISession session) =>
 {
+    using var transaction = session.BeginTransaction();
     await session.SaveAsync(product);
-    await session.FlushAsync();
+    await transaction.CommitAsync();
     return Results.Created($"/products/{product.Id}", product);
 })
 .WithName("CreateProduct");
 
 app.MapPut("/products/{id}", async (int id, Product product, ISession session) =>
 {
+    using var transaction = session.BeginTransaction();
     var existing = await session.GetAsync<Product>(id);
     if (existing is null) return Results.NotFound();
 
@@ -91,18 +94,19 @@ app.MapPut("/products/{id}", async (int id, Product product, ISession session) =
     existing.Price = product.Price;
     existing.Description = product.Description;
     await session.UpdateAsync(existing);
-    await session.FlushAsync();
+    await transaction.CommitAsync();
     return Results.Ok(existing);
 })
 .WithName("UpdateProduct");
 
 app.MapDelete("/products/{id}", async (int id, ISession session) =>
 {
+    using var transaction = session.BeginTransaction();
     var product = await session.GetAsync<Product>(id);
     if (product is null) return Results.NotFound();
 
     await session.DeleteAsync(product);
-    await session.FlushAsync();
+    await transaction.CommitAsync();
     return Results.NoContent();
 })
 .WithName("DeleteProduct");
