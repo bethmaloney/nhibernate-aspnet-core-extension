@@ -12,8 +12,8 @@
     <Description>NHibernate integration for ASP.NET Core with dependency injection and Microsoft.Extensions.Logging support.</Description>
     <PackageTags>nhibernate;aspnetcore;dependency-injection;logging</PackageTags>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageProjectUrl>https://github.com/beth/nhibernate-aspnet-core-extension</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/beth/nhibernate-aspnet-core-extension</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/bethmaloney/nhibernate-aspnet-core-extension</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/bethmaloney/nhibernate-aspnet-core-extension</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageReadmeFile>README.md</PackageReadmeFile>
 
