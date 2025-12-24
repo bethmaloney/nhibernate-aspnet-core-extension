@@ -1,12 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using NHibernate.Cfg;
 using NHibernate.Dialect;
-using NHibernate.Extensions.AspNetCore;
 using NHibernate.Extensions.Sqlite;
-using ISession = NHibernate.ISession;
-using ISessionFactory = NHibernate.ISessionFactory;
-using IStatelessSession = NHibernate.IStatelessSession;
 
 namespace NHibernate.Extensions.AspNetCore.Tests;
 

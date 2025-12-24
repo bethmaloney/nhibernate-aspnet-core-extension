@@ -2,7 +2,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NHibernate.Cfg;
 using NHibernate.Dialect;
-using NHibernate.Extensions.AspNetCore;
 using NHibernate.Extensions.Sqlite;
 
 namespace NHibernate.Extensions.AspNetCore.Tests;
